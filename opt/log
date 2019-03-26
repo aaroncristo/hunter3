@@ -1,0 +1,33 @@
+
+2019-03-26 19:42:51,210 ERROR __main__ a bytes-like object is required, not 'str'
+2019-03-26 19:47:42,313 ERROR __main__ a bytes-like object is required, not 'str'
+2019-03-26 19:57:12,479 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 19:57:12,480 ERROR __main__ a bytes-like object is required, not 'str'
+2019-03-26 19:59:13,776 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 19:59:13,776 ERROR __main__ a bytes-like object is required, not 'str'
+2019-03-26 20:03:53,249 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 20:05:13,848 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 20:05:28,846 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 20:29:21,270 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 20:30:33,367 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 20:30:33,368 ERROR __main__ a bytes-like object is required, not 'str'
+2019-03-26 20:34:52,165 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,165 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,165 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,166 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,166 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,167 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,167 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,167 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,168 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,168 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,168 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,169 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,169 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,169 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,170 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,170 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,170 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,171 ERROR __main__ unsupported operand type(s) for +: 'map' and 'list'
+2019-03-26 20:34:52,264 ERROR __main__ the JSON object must be str, bytes or bytearray, not dict
+2019-03-26 20:34:52,264 ERROR __main__ a bytes-like object is required, not 'str'
