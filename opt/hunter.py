@@ -41,8 +41,9 @@ class MyDaemon(Daemon):
 		# Checks if a file is a valid text file
 	def isText(self,filename):
 		try:
+			
 			return not is_binary(filename)
-
+			
 		except Exception as e:
 			MyDaemon.logger.error(e)
 			
@@ -80,7 +81,7 @@ class MyDaemon(Daemon):
 		if currentchecksum in MyDaemon.HASHTABLE:
 			malware = str(MyDaemon.HASHTABLE[currentchecksum])
 			infectedFound(currentfile, malware)
-		if True: #self.isText(currentfile):
+		if self.isText(currentfile):
 			for rules in MyDaemon.YARA_RULES:
 				try:
 					result = rules.match(data=fileData, callback=mycallback)
