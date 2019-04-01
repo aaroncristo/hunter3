@@ -19,7 +19,8 @@ import yara
 import itertools
 import threading
 import socket
-from multiprocessing import Pool
+from multiprocessing import cpu_count, Pool
+from multiprocessing.dummy import Pool as ThreadPool
 from binaryornot.check import is_binary
 #from multiprocessing.dummy import Pool as ThreadPool
 from itertools import product
@@ -45,6 +46,7 @@ class MyDaemon(Daemon):
 			return not is_binary(filename)
 			
 		except Exception as e:
+			print('isText Eception')
 			MyDaemon.logger.error(e)
 			
 
@@ -57,37 +59,41 @@ class MyDaemon(Daemon):
 		return file_roots
 
 	def worker(self,file):
-		def mycallback(data):
-			try:
-				family = data['meta'].get('family')
-				if type(family) is str:
-					infectedFound(currentfile, family  + "(" + str(data['rule']).replace("_", " ") + ")")
-				yara.CALLBACK_CONTINUE
-			except Exception as e:
-				MyDaemon.logger.error(e)
-		def infectedFound(filename, details):
-			tmp = []
-			if filename in self.results:
-				tmp = self.results[filename]
-			tmp.append(details)
-			self.results[filename] = tmp
-		malware = False
-		currentfile = file
-		fileHandle = open(currentfile, 'rb')
-		fileData = fileHandle.read()
-		hash = hashlib.md5()
-		hash.update(fileData)
-		currentchecksum = hash.hexdigest()
-		if currentchecksum in MyDaemon.HASHTABLE:
-			malware = str(MyDaemon.HASHTABLE[currentchecksum])
-			infectedFound(currentfile, malware)
-		if self.isText(currentfile):
-			for rules in MyDaemon.YARA_RULES:
+		try:
+			def mycallback(data):
 				try:
-					result = rules.match(data=fileData, callback=mycallback)
-				except:
-					pass
-		return True
+					family = data['meta'].get('family')
+					if type(family) is str:
+						infectedFound(currentfile, family  + "(" + str(data['rule']).replace("_", " ") + ")")
+					yara.CALLBACK_CONTINUE
+				except Exception as e:
+					MyDaemon.logger.error(e)
+			def infectedFound(filename, details):
+				tmp = []
+				if filename in self.results:
+					tmp = self.results[filename]
+				tmp.append(details)
+				self.results[filename] = tmp
+			malware = False
+			currentfile = file
+			fileHandle = open(currentfile, 'rb')
+			fileData = fileHandle.read()
+			hash = hashlib.md5()
+			hash.update(fileData)
+			fileHandle.close()
+			currentchecksum = hash.hexdigest()
+			if currentchecksum in MyDaemon.HASHTABLE:
+				malware = str(MyDaemon.HASHTABLE[currentchecksum])
+				infectedFound(currentfile, malware)
+			if not is_binary(currentfile):
+				for rules in MyDaemon.YARA_RULES:
+					try:
+						result = rules.match(data=fileData, callback=mycallback)
+					except:
+						pass
+			return True
+		except Exception as e:
+			MyDaemon.logger.error(e)
 		
 	def FileScan(self,WebPath,key):
 		try:
@@ -101,13 +107,17 @@ class MyDaemon(Daemon):
 			file_roots = self.getFileRoots(WebPath)
 			print('Initiating scan threads')		
 			# Threading
-			pool = Pool(4)
+			pool = ThreadPool(4)
+
+			print('Done')
 			
 			status_check = list(pool.map(self.worker, file_roots))
-			print('Done')
+
+			#for x in file_roots:
+			#	self.worker(x)
 			pool.close()
 			pool.join()
-
+			print(status_check)
 			total_time = time.time() - start_time
 			print('Scan completed')
 			#Handling Response
@@ -130,9 +140,9 @@ class MyDaemon(Daemon):
 			for filename in fnmatch.filter(filenames, '*.json'):
 				try:
 					loadedDatabases += 1
-					dbdata = open(os.path.join(root, filename)).read()
-					signatures = json.loads(dbdata)
-
+					dbdata = open(os.path.join(root, filename))
+					signatures = json.loads(dbdata.read())
+					dbdata.close()
 					for signatureHash in signatures["Database_Hash"]:
 						MyDaemon.HASHTABLE[signatureHash["Malware_Hash"]] = signatureHash["Malware_Name"]	
 
@@ -176,7 +186,7 @@ class MyDaemon(Daemon):
 					data = data.decode().split(';')
 					if len(data) >= 1:
 						reply=self.FileScan(data[1],data[0])
-					print(reply)
+					#print(reply)
 					connection.sendall(str(reply).encode())
 	  #				  sock.close()
 			print('Socket disconnected')
