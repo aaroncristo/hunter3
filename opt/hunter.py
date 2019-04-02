@@ -19,12 +19,10 @@ import yara
 import itertools
 import threading
 import socket
-from multiprocessing import cpu_count, Pool
+from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool as ThreadPool
 from binaryornot.check import is_binary
-#from multiprocessing.dummy import Pool as ThreadPool
 from itertools import product
-
 #for debugging
 from pprint import pprint
 
@@ -39,18 +37,7 @@ class MyDaemon(Daemon):
 	hash_count = 0
 	results = {}
 
-		# Checks if a file is a valid text file
-	def isText(self,filename):
-		try:
-			
-			return not is_binary(filename)
-			
-		except Exception as e:
-			print('isText Eception')
-			MyDaemon.logger.error(e)
-			
-
-		#Returns a list of files with roots 
+	#Returns a list of files with roots 
 	def getFileRoots(self,path):
 		file_roots = []
 		for root, dirnames, files in os.walk(path):
@@ -107,7 +94,7 @@ class MyDaemon(Daemon):
 			file_roots = self.getFileRoots(WebPath)
 			print('Initiating scan threads')		
 			# Threading
-			pool = ThreadPool(4)
+			pool = ThreadPool(cpu_count() * 5)
 
 			print('Done')
 			
