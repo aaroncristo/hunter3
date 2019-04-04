@@ -4,35 +4,24 @@ import logging
 import json
 import socket
 import sys
-import re, os, platform
+import re, os
 from daemon import Daemon
 import fnmatch
-import stat
-import datetime
-import mimetypes
-import subprocess
-import string
 import time
 import hashlib
-import math
 import yara
 import itertools
 import threading
-import socket
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool as ThreadPool
 from binaryornot.check import is_binary
 from itertools import product
-#for debugging
-from pprint import pprint
 
 
 class MyDaemon(Daemon):
-	MATCHING_SIGNATURES = []
 	YARA_RULES = []
 	HASHTABLE = {}
 	SIGNATURES_PATH = ''
-	signaturesStats = {}
 	yara_databases = 0
 	hash_count = 0
 	results = {}
@@ -84,24 +73,18 @@ class MyDaemon(Daemon):
 		
 	def FileScan(self,WebPath,key):
 		try:
-			totalScanned = 0
-			totalPermissionsScanned = 0
-			currentfile = ''
-			
+			self.results = {}
 			start_time =  time.time()
-			# Thread function
-
-			file_roots = self.getFileRoots(WebPath)
+			
+                        file_roots = self.getFileRoots(WebPath)
 			print('Initiating scan threads')		
 			# Threading
-			pool = ThreadPool(cpu_count() * 5)
+			pool = ThreadPool(cpu_count() * 1)
 
 			print('Done')
 			
 			status_check = list(pool.map(self.worker, file_roots))
 
-			#for x in file_roots:
-			#	self.worker(x)
 			pool.close()
 			pool.join()
 			print(status_check)
@@ -137,7 +120,6 @@ class MyDaemon(Daemon):
 					pass
 
 		for root, dirnames, filenames in itertools.chain(os.walk(os.path.join(MyDaemon.SIGNATURES_PATH, "more")), os.walk(os.path.join(MyDaemon.SIGNATURES_PATH, "rules"))):
-#		for root, dirnames, filenames in os.walk(os.path.join(MyDaemon.SIGNATURES_PATH, "more")):
 			for filename in fnmatch.filter(filenames, '*.yar*'):
 				totalDatabases += 1
 				try:
@@ -240,7 +222,6 @@ if __name__ == "__main__":
 		else:
 			print("Unknown command")
 			sys.exit(2)
-			sys.exit(0)
 	else:
 		print("usage: %s start|stop|restart" % sys.argv[0])
 		sys.exit(2)
