@@ -75,8 +75,8 @@ class MyDaemon(Daemon):
 		try:
 			self.results = {}
 			start_time =  time.time()
-			
-                        file_roots = self.getFileRoots(WebPath)
+
+			file_roots = self.getFileRoots(WebPath)
 			print('Initiating scan threads')		
 			# Threading
 			pool = ThreadPool(cpu_count() * 1)
@@ -225,5 +225,3 @@ if __name__ == "__main__":
 	else:
 		print("usage: %s start|stop|restart" % sys.argv[0])
 		sys.exit(2)
-
-
