@@ -12,7 +12,7 @@ import hashlib
 import yara
 import itertools
 import threading
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count, Process
 from multiprocessing.dummy import Pool as ThreadPool
 from binaryornot.check import is_binary
 from itertools import product
@@ -79,7 +79,7 @@ class MyDaemon(Daemon):
 			file_roots = self.getFileRoots(WebPath)
 			print('Initiating scan threads')		
 			# Threading
-			pool = ThreadPool(cpu_count() * 1)
+			pool = ThreadPool(cpu_count() * 5)
 
 			print('Done')
 			
@@ -140,7 +140,14 @@ class MyDaemon(Daemon):
 		except Exception as e:
 			print("Error:")
 			sys.exit();
-
+	def childSocketProcess(self, sock, connect, data):
+		try:
+			reply=self.FileScan(data[1],data[0])
+			connect.sendall(str(reply).encode())
+			sock.close()
+		except Exception as e:
+			MyDaemon.logger.error(e)
+			
 	def my_socket(self,port):
 		try:
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -154,9 +161,12 @@ class MyDaemon(Daemon):
 				if len(data) > 0:
 					data = data.decode().split(';')
 					if len(data) >= 1:
-						reply=self.FileScan(data[1],data[0])
+						w_process = Process(target=self.childSocket, args=(sock, connection, data,))
+						w_process.daemon = True
+						w_process.start()
+#						reply=self.FileScan(data[1],data[0])
 					#print(reply)
-					connection.sendall(str(reply).encode())
+#					connection.sendall(str(reply).encode())
 	  #				  sock.close()
 			print('Socket disconnected')
 		except Exception as e:
