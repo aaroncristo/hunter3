@@ -70,6 +70,7 @@ class MyDaemon(Daemon):
 			return True
 		except Exception as e:
 			MyDaemon.logger.error(e)
+			return False
 		
 	def FileScan(self,WebPath,key):
 		try:
