@@ -79,7 +79,7 @@ class MyDaemon(Daemon):
 			file_roots = self.getFileRoots(WebPath)
 			print('Initiating scan threads')		
 			# Threading
-			pool = ThreadPool(cpu_count() * 5)
+			pool = ThreadPool(cpu_count() * 1)
 
 			print('Done')
 			
@@ -161,7 +161,7 @@ class MyDaemon(Daemon):
 				if len(data) > 0:
 					data = data.decode().split(';')
 					if len(data) >= 1:
-						w_process = Process(target=self.childSocket, args=(sock, connection, data,))
+						w_process = Process(target=self.childSocketProcess, args=(sock, connection, data,))
 						w_process.daemon = True
 						w_process.start()
 #						reply=self.FileScan(data[1],data[0])
