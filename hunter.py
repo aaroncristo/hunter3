@@ -16,6 +16,7 @@ from multiprocessing import cpu_count, Process
 from multiprocessing.dummy import Pool as ThreadPool
 from binaryornot.check import is_binary
 from itertools import product
+from client import Client
 
 
 class MyDaemon(Daemon):
@@ -141,11 +142,10 @@ class MyDaemon(Daemon):
 		except Exception as e:
 			print("Error:")
 			sys.exit();
-	def childSocketProcess(self, sock, connect, data):
+	def childSocketProcess(self, connect, data):
 		try:
 			reply=self.FileScan(data[1],data[0])
 			connect.sendall(str(reply).encode())
-			sock.close()
 		except Exception as e:
 			MyDaemon.logger.error(e)
 			
@@ -159,22 +159,27 @@ class MyDaemon(Daemon):
 				connection, address = sock.accept()
 				data = connection.recv(1048576)
 				reply = ""
+				data = data.decode()
 				if len(data) > 0:
-					data = data.decode().split(';')
+					if data == "close_hunter_555":
+						connection.sendall(str('Terminating Server').encode())
+						break
+					
+					data = data.split(';')
 					if len(data) >= 1:
-						w_process = Process(target=self.childSocketProcess, args=(sock, connection, data,))
+						w_process = Process(target=self.childSocketProcess, args=( connection, data,))
 						w_process.daemon = True
 						w_process.start()
 #						reply=self.FileScan(data[1],data[0])
 					#print(reply)
 #					connection.sendall(str(reply).encode())
 	  #				  sock.close()
+			sock.close()
 			print('Socket disconnected')
 		except Exception as e:
 			print('Socket Error')
 			MyDaemon.logger.error(e)
-		finally:
-			sock.close()
+			
 	#function starting thread
 	def start_up(self):
 		#Create two threads as follows
@@ -188,6 +193,7 @@ class MyDaemon(Daemon):
 			#waiting for thread to finish (infinite)
 			print('Daemon Process')
 			s.join()
+			return False
 			print('Exited')
 		except Exception as e:
 			MyDaemon.logger.error(e)
@@ -215,20 +221,31 @@ class MyDaemon(Daemon):
 	def run(self):
 		self.init_me()
 		try:
-			self.start_up()
+			for tries in range(0,20):
+				if self.start_up() is False:
+					print('Retrying..', tries+1)
+					time.sleep(5)
+				else:
+					running = True
+					break
+			if running is not True:
+				MyDaemon.logger.error("Failed to start daemon")
 		except Exception as e:
 			MyDaemon.logger.error(e)
 
 #Execution starts here
 if __name__ == "__main__":
 	daemon = MyDaemon('/tmp/hunter.py.pid')
+	client = Client()
 	if len(sys.argv) == 2:
 		if 'start' == sys.argv[1]:
 			print('Starting Hunter')
 			daemon.start()
 		elif 'stop' == sys.argv[1]:
+			client.close()
 			daemon.stop()
 		elif 'restart' == sys.argv[1]:
+			client.close()
 			daemon.restart()
 		else:
 			print("Unknown command")
