@@ -17,7 +17,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from binaryornot.check import is_binary
 #from itertools import product
 from client import Client
-
+from valhallaAPI.valhalla import ValhallaAPI
 
 class MyDaemon(Daemon):
 	YARA_RULES = []
@@ -37,27 +37,33 @@ class MyDaemon(Daemon):
 
 	def worker(self,file):
 		try:
-			print('test print', file)
+#			print('test print', file)
 			def mycallback(data):
+			#	print('callback match')
 				try:
 					family = data['meta'].get('family')
 					if type(family) is str:
 						infectedFound(currentfile, family  + "(" + str(data['rule']).replace("_", " ") + ")")
+					else:
+						print('NO_FAMILY')
 	#					infectedFound(currentfile, data);
-#						score = data['meta'].get('score');
-#						print('score:::', score);
-#						if type(score) is int:
-						#	infectedFound(currentfile, family  + "(" + str(data['rule']).replace("_", " ") + ")", score)
+					#	score = data['meta'].get('score');
+					#	print('score:::', score);
+					#	if type(score) is int:
+					#		infectedFound(currentfile, family  + "(" + str(data['rule']).replace("_", " ") + ")", score)
 					yara.CALLBACK_CONTINUE
 				except Exception as e:
 					MyDaemon.logger.error(e)
 			def infectedFound(filename, details):
-				print('infectedFound', details);
+				print('infectedFound', filename);
+				print('DETAIL:', details);	
 				tmp = []
 				if filename in self.results:
 				    tmp = self.results[filename]
 				tmp.append(details)
+			#	tmp.append(score)
 				self.results[filename] = tmp
+			#	print('res', self.results);
 			malware = False
 			currentfile = file
 			fileHandle = open(currentfile, 'rb')
@@ -66,20 +72,20 @@ class MyDaemon(Daemon):
 			hash.update(fileData)
 			fileHandle.close()
 			currentchecksum = hash.hexdigest()
-			print('currentCheckSUm', currentchecksum)
 			if currentchecksum in MyDaemon.HASHTABLE:
-				print('inside worker if checksum,,', currentchecksum)
+				print('NEW')
 				malware = str(MyDaemon.HASHTABLE[currentchecksum])
 				infectedFound(currentfile, malware)
 			if not is_binary(currentfile):
+				print('NEW');
 				for rules in MyDaemon.YARA_RULES:
 					try:
-						print('inside worker not is_binary:  fileData to callback');
-						print(rules)
-						result = rules.match(data=fileData, callback=mycallback,  which_callbacks=yara.CALLBACK_MATCHES)
-                                                
+						result = rules.match(data=fileData, callback=mycallback, which_callbacks=yara.CALLBACK_MATCHES)
 					except:
 						pass
+#			else:
+#				print('CURRENTFILE IS BINARY')
+
 			return True
 		except Exception as e:
 			MyDaemon.logger.error(e)
@@ -96,7 +102,7 @@ class MyDaemon(Daemon):
 			pool = ThreadPool(cpu_count() * 1)
 
 			print('Done')
-			print('file_tool', file_roots)
+			#print('file_tool', file_roots)
 			status_check = list(pool.map(self.worker, file_roots))
 
 			pool.close()
@@ -112,10 +118,17 @@ class MyDaemon(Daemon):
 			ret["infected_urls"] = self.results
 			ret["time_elapsed"] = str(total_time)
 			return json.dumps(ret)
-			print('scan completed..');
 
 		except Exception as e:
 			MyDaemon.logger.error(e)
+
+	# Fetch signatures from NextronSystems/valhallaAPI
+	def fetchRules(self):
+		v = ValhallaAPI(api_key="1111111111111111111111111111111111111111111111111111111111111111")
+		response = v.get_rules_text()
+		
+		with open('./signatures/rules/valhalla-rules.yar', 'w') as fh:
+			fh.write(response)
 
 	# Load signatures
 	def LoadSignatures(self):
@@ -147,6 +160,7 @@ class MyDaemon(Daemon):
 				except:
 					pass
 		MyDaemon.hash_count = len(MyDaemon.HASHTABLE)
+		#print('myrule:', MyDaemon.YARA_RULES)
 
 
 	#function for getting application path
@@ -224,6 +238,7 @@ class MyDaemon(Daemon):
 		try:
 			MyDaemon.SIGNATURES_PATH = os.path.join(self.GetApplicationPath(), 'signatures')
 			if os.path.isdir(MyDaemon.SIGNATURES_PATH):
+				self.fetchRules()
 				self.LoadSignatures()
 			else:
 				print("Unable to find signatures folder, please check installation.")

@@ -3,3 +3,6 @@ log
 err
 __pycache__
 daemon.pyc
+client.pyc
+.hunter.py.sw*
+

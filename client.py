@@ -25,10 +25,13 @@ if __name__ == "__main__":
 	client = Client()
 
 	if arg == 'send':
-		print('No message provided')if not sys.argv[2] else print(client.send(sys.argv[2]))
+		if not sys.argv[2]:
+			print('No message provided')
+		else:
+			client.send(sys.argv[2])
 
 	elif arg == 'close':
-		print(client.close())
+		client.close()
 		
 	else:
 		print("usage: %s send [msg]|close" % sys.argv[0])
